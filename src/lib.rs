@@ -26,39 +26,41 @@ pub fn read_package_json() -> Result<PackageJson, Box<dyn Error>> {
 pub async fn get_dependencies_to_update(pkg: &PackageJson) -> Vec<Dependency> {
     let dependencies = pkg.get_all_dependencies();
 
-    fetch_dist_tags(dependencies).await.into_iter()
+    get_latest_version(dependencies).await.into_iter()
         .filter(|dep| dep.is_some())
         .map(|dep| dep.unwrap())
         .collect()
 }
 
-async fn fetch_dist_tags(deps: Vec<Dependency>) -> Vec<Option<Dependency>> {
-    let mut tasks: Vec<JoinHandle<Result<Dependency, String>>> = vec![];
+async fn get_latest_version(deps: Vec<Dependency>) -> Vec<Option<Dependency>> {
+    let mut tasks: Vec<JoinHandle<Dependency>> = vec![];
 
     for dep in deps {
         tasks.push(tokio::spawn(async move {
             match reqwest::get(dep.get_dist_tags_url()).await {
                 Ok(res) => match res.json::<DistTags>().await {
-                    Ok(dist_tags) => Ok(Dependency {
-                        name: dep.name,
-                        version: dist_tags.latest,
-                    }),
-                    Err(e) => Err(format!("Failed deserialize response for {} - {}", dep.name, e))
+                    Ok(dist_tags) => Dependency {
+                        latest_version: Some(dist_tags.latest),
+                        ..dep
+                    },
+                    Err(e) => {
+                        log::warn!("Failed deserialize response for {} - {}", dep.name, e);
+                        dep
+                    }
                 },
-                Err(e) => Err(format!("Failed fetching dist-tags for {} - {}", dep.name, e))
+                Err(e) => {
+                    log::warn!("Failed fetching dist-tags for {} - {}", dep.name, e);
+                    dep
+                }
             }
         }))
     }
 
     join_all(tasks).await.into_iter()
         .map(|res| match res {
-            Ok(Ok(dep)) => Some(dep),
-            Ok(Err(e)) => {
-                log::error!("{}", e);
-                None
-            }
+            Ok(dep) => Some(dep),
             Err(e) => {
-                log::error!("{}", e);
+                log::warn!("{}", e);
                 None
             }
         })

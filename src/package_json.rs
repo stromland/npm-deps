@@ -30,21 +30,19 @@ impl PackageJson {
 
     fn get_dependency(key_value: (&String, &String)) -> Dependency {
         let (name, version) = key_value;
-        Dependency {
-            name: name.clone(),
-            version: version.clone(),
-        }
+        Dependency::new(name.clone(), version.clone())
     }
 }
 
 pub struct Dependency {
     pub name: String,
     pub version: String,
+    pub latest_version: Option<String>,
 }
 
 impl Dependency {
     pub fn new(name: String, version: String) -> Dependency {
-        Dependency { name, version }
+        Dependency { name, version, latest_version: None }
     }
     pub fn get_dist_tags_url(&self) -> String {
         format!("https://registry.npmjs.org/-/package/{}/dist-tags", self.name)
