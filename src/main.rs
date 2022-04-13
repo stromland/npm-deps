@@ -17,7 +17,6 @@ async fn main() {
 
     deps
         .into_iter()
-        .filter(|dep| dep.latest_version.is_some())
         .for_each(|dep| if let Some(latest) = dep.latest_version {
             if dep.version != latest {
                 log::info!("{}: {} -> {}", dep.name, dep.version, latest);
