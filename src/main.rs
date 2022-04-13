@@ -15,11 +15,5 @@ async fn main() {
     let mut deps = npm_deps::get_dependencies_to_update(&package_json).await;
     deps.sort_by(|dep1, dep2| dep1.name.cmp(&dep2.name));
 
-    deps
-        .into_iter()
-        .for_each(|dep| if let Some(latest) = dep.latest_version {
-            if dep.version != latest {
-                log::info!("{}: {} -> {}", dep.name, dep.version, latest);
-            }
-        });
+    npm_deps::table::print_dependencies(deps);
 }

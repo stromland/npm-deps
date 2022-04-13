@@ -8,6 +8,7 @@ use tokio::task::JoinHandle;
 use package_json::{Dependency, PackageJson};
 
 pub mod package_json;
+pub mod table;
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
