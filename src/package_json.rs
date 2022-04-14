@@ -23,7 +23,8 @@ impl PackageJson {
     }
 
     pub fn get_all_dependencies(self) -> Vec<Dependency> {
-        self.dependencies.into_iter()
+        self.dependencies
+            .into_iter()
             .chain(self.dev_dependencies.into_iter())
             .map(PackageJson::get_dependency)
             .collect()

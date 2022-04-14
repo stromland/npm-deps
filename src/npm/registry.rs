@@ -2,8 +2,8 @@ use futures::future::join_all;
 use serde::Deserialize;
 use tokio::task::JoinHandle;
 
-use crate::Dependency;
 use crate::npm::client::NpmConfig;
+use crate::Dependency;
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -38,7 +38,8 @@ impl NpmRegistry {
 }
 
 pub async fn get_latest_version(dependencies: Vec<Dependency>) -> Vec<Option<Dependency>> {
-    let tasks: Vec<JoinHandle<Dependency>> = dependencies.into_iter()
+    let tasks: Vec<JoinHandle<Dependency>> = dependencies
+        .into_iter()
         .map(|dep| {
             tokio::spawn(async move {
                 match NpmRegistry::fetch_dist_tag(&dep).await {
@@ -46,7 +47,7 @@ pub async fn get_latest_version(dependencies: Vec<Dependency>) -> Vec<Option<Dep
                         latest_version: Some(dist_tags.latest),
                         ..dep
                     },
-                    None => dep
+                    None => dep,
                 }
             })
         })

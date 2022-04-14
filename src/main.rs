@@ -8,7 +8,11 @@ use npm_deps::package_json::{Dependency, PackageJson};
 
 #[tokio::main]
 async fn main() {
-    SimpleLogger::new().with_level(LevelFilter::Warn).env().init().unwrap();
+    SimpleLogger::new()
+        .with_level(LevelFilter::Warn)
+        .env()
+        .init()
+        .unwrap();
 
     let package_json = PackageJson::read_package_json().unwrap_or_else(|err| {
         log::error!("expected package.json in current folder. Error: {}", err);
@@ -22,7 +26,8 @@ async fn main() {
 
     log::info!("current npm registry: {}", &config.registry);
 
-    let dependencies: Vec<Dependency> = package_json.get_all_dependencies()
+    let dependencies: Vec<Dependency> = package_json
+        .get_all_dependencies()
         .into_iter()
         .map(|dep| Dependency {
             registry: config.registry.clone(),
@@ -32,8 +37,7 @@ async fn main() {
 
     log::info!("total number of dependencies: {}", dependencies.len());
 
-    let mut dependencies = npm_deps::get_dependencies_to_update(dependencies)
-        .await;
+    let mut dependencies = npm_deps::get_dependencies_to_update(dependencies).await;
     dependencies.sort_by(|dep1, dep2| dep1.name.cmp(&dep2.name));
 
     let dep_length = dependencies.len();

@@ -1,4 +1,4 @@
-use serde::{Deserialize};
+use serde::Deserialize;
 use std::process;
 
 #[derive(Debug, Deserialize)]
@@ -7,7 +7,7 @@ pub struct NpmConfig {
     pub registry: String,
 }
 
-pub struct NpmClient { }
+pub struct NpmClient {}
 
 impl NpmClient {
     pub fn get_config() -> Option<NpmConfig> {
@@ -16,7 +16,6 @@ impl NpmClient {
             .output()
             .expect("failed to run npm");
 
-        serde_json::from_slice(&output.stdout)
-            .expect("failed to read npm config")
+        serde_json::from_slice(&output.stdout).expect("failed to read npm config")
     }
 }
