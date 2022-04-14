@@ -38,7 +38,11 @@ async fn main() {
     log::info!("total number of dependencies: {}", dependencies.len());
 
     let mut dependencies = npm_deps::get_dependencies_to_update(dependencies).await;
-    dependencies.sort_by(|dep1, dep2| dep1.name.cmp(&dep2.name));
+    dependencies.sort_by(|dep1, dep2| {
+        dep1.is_dev
+            .cmp(&dep2.is_dev)
+            .then(dep1.name.cmp(&dep2.name))
+    });
 
     let dep_length = dependencies.len();
     log::info!("total number of dependencies to update: {}", dep_length);

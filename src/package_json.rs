@@ -23,31 +23,37 @@ impl PackageJson {
     }
 
     pub fn get_all_dependencies(self) -> Vec<Dependency> {
-        self.dependencies
+        let mut deps: Vec<Dependency> = self
+            .dependencies
             .into_iter()
-            .chain(self.dev_dependencies.into_iter())
-            .map(PackageJson::get_dependency)
-            .collect()
-    }
+            .map(|(name, version)| Dependency::new(name, version, false))
+            .collect();
+        let dev_deps: Vec<Dependency> = self
+            .dev_dependencies
+            .into_iter()
+            .map(|(name, version)| Dependency::new(name, version, true))
+            .collect();
 
-    fn get_dependency(key_value: (String, String)) -> Dependency {
-        let (name, version) = key_value;
-        Dependency::new(name, version)
+        deps.extend(dev_deps);
+
+        deps
     }
 }
 
 pub struct Dependency {
     pub name: String,
     pub version: String,
+    pub is_dev: bool,
     pub registry: String,
     pub latest_version: Option<String>,
 }
 
 impl Dependency {
-    pub fn new(name: String, version: String) -> Dependency {
+    pub fn new(name: String, version: String, is_dev: bool) -> Dependency {
         Dependency {
             name,
             version,
+            is_dev,
             registry: String::from("https://registry.npmjs.org/"),
             latest_version: None,
         }
