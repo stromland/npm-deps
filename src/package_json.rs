@@ -22,25 +22,16 @@ impl PackageJson {
         Ok(package_json)
     }
 
-    pub fn get_all_dependencies(&self) -> Vec<Dependency> {
-        let mut all: Vec<Dependency> = Vec::new();
-
-        let dev_deps: Vec<Dependency> = self.dev_dependencies.iter()
+    pub fn get_all_dependencies(self) -> Vec<Dependency> {
+        self.dependencies.into_iter()
+            .chain(self.dev_dependencies.into_iter())
             .map(PackageJson::get_dependency)
-            .collect();
-        let deps: Vec<Dependency> = self.dependencies.iter()
-            .map(PackageJson::get_dependency)
-            .collect();
-
-        all.extend(dev_deps);
-        all.extend(deps);
-
-        all
+            .collect()
     }
 
-    fn get_dependency(key_value: (&String, &String)) -> Dependency {
+    fn get_dependency(key_value: (String, String)) -> Dependency {
         let (name, version) = key_value;
-        Dependency::new(name.clone(), version.clone())
+        Dependency::new(name, version)
     }
 }
 
@@ -53,13 +44,15 @@ pub struct Dependency {
 
 impl Dependency {
     pub fn new(name: String, version: String) -> Dependency {
-        Dependency { name, version, registry: "https://registry.npmjs.org/".to_string(), latest_version: None }
+        Dependency {
+            name,
+            version,
+            registry: String::from("https://registry.npmjs.org/"),
+            latest_version: None,
+        }
     }
 
     pub fn get_dist_tags_url(&self) -> String {
-
         format!("{}-/package/{}/dist-tags", &self.registry, &self.name)
     }
 }
-
-

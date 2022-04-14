@@ -39,18 +39,22 @@ impl NpmRegistry {
 
 pub async fn get_latest_version(dependencies: Vec<Dependency>) -> Vec<Option<Dependency>> {
     let tasks: Vec<JoinHandle<Dependency>> = dependencies.into_iter()
-        .map(|dep| tokio::spawn(async move {
-            match NpmRegistry::fetch_dist_tag(&dep).await {
-                Some(dist_tags) => Dependency {
-                    latest_version: Some(dist_tags.latest),
-                    ..dep
-                },
-                None => dep
-            }
-        }))
+        .map(|dep| {
+            tokio::spawn(async move {
+                match NpmRegistry::fetch_dist_tag(&dep).await {
+                    Some(dist_tags) => Dependency {
+                        latest_version: Some(dist_tags.latest),
+                        ..dep
+                    },
+                    None => dep
+                }
+            })
+        })
         .collect();
 
-    join_all(tasks).await.into_iter()
+    join_all(tasks)
+        .await
+        .into_iter()
         .map(|res| match res {
             Ok(dep) => Some(dep),
             Err(e) => {

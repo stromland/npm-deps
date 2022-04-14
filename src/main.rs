@@ -20,7 +20,8 @@ async fn main() {
         process::exit(1);
     });
 
-    let dependencies = package_json.get_all_dependencies().into_iter()
+    let dependencies = package_json.get_all_dependencies()
+        .into_iter()
         .map(|dep| Dependency {
             registry: config.registry.clone(),
             ..dep
