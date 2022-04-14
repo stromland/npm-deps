@@ -1,7 +1,8 @@
-use comfy_table::{Table};
+use comfy_table::Table;
+
 use crate::Dependency;
 
-pub fn print_dependencies(deps: Vec<Dependency>) {
+pub fn get_dependency_table(dependencies: Vec<Dependency>) -> Table {
     let mut table = Table::new();
 
     table.load_preset(comfy_table::presets::UTF8_BORDERS_ONLY);
@@ -10,17 +11,11 @@ pub fn print_dependencies(deps: Vec<Dependency>) {
     table.set_header(vec!["Name", "Current version", "Latest version"]);
 
     // Dependencies
-    for dep in deps {
+    for dep in dependencies {
         if let Some(latest) = dep.latest_version {
-            if dep.version != latest {
-                table.add_row(vec![dep.name, dep.version, latest]);
-            }
+            table.add_row(vec![dep.name, dep.version, latest]);
         }
     }
 
-    if table.row_iter().len() == 0 {
-        println!("All dependencies are up to date!")
-    } else {
-        println!("{}", table);
-    }
+    table
 }

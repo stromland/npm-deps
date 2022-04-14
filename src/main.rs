@@ -20,7 +20,9 @@ async fn main() {
         process::exit(1);
     });
 
-    let dependencies = package_json.get_all_dependencies()
+    log::info!("current npm registry: {}", &config.registry);
+
+    let dependencies: Vec<Dependency> = package_json.get_all_dependencies()
         .into_iter()
         .map(|dep| Dependency {
             registry: config.registry.clone(),
@@ -28,8 +30,19 @@ async fn main() {
         })
         .collect();
 
-    let mut dependencies = npm_deps::get_dependencies_to_update(dependencies).await;
+    log::info!("total number of dependencies: {}", dependencies.len());
+
+    let mut dependencies = npm_deps::get_dependencies_to_update(dependencies)
+        .await;
     dependencies.sort_by(|dep1, dep2| dep1.name.cmp(&dep2.name));
 
-    npm_deps::table::print_dependencies(dependencies);
+    let dep_length = dependencies.len();
+    log::info!("total number of dependencies to update: {}", dep_length);
+
+    if dep_length == 0 {
+        println!("All dependencies are up to date!")
+    } else {
+        let table = npm_deps::table::get_dependency_table(dependencies);
+        println!("{}", table);
+    }
 }

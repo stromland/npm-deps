@@ -9,5 +9,12 @@ pub async fn get_dependencies_to_update(dependencies: Vec<Dependency>) -> Vec<De
         .await
         .into_iter()
         .flatten()
+        .filter(|dep| {
+            if let Some(latest) = &dep.latest_version {
+                latest != &dep.version
+            } else {
+                false
+            }
+        })
         .collect()
 }
