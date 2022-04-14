@@ -1,4 +1,6 @@
 use std::collections::HashMap;
+use std::error::Error;
+use std::fs;
 
 use serde::Deserialize;
 
@@ -12,6 +14,14 @@ pub struct PackageJson {
 }
 
 impl PackageJson {
+    pub fn read_package_json() -> Result<PackageJson, Box<dyn Error>> {
+        let package_json = fs::read_to_string("package.json")?;
+
+        let package_json: PackageJson = serde_json::from_str(package_json.as_str())?;
+
+        Ok(package_json)
+    }
+
     pub fn get_all_dependencies(&self) -> Vec<Dependency> {
         let mut all: Vec<Dependency> = Vec::new();
 
@@ -37,15 +47,18 @@ impl PackageJson {
 pub struct Dependency {
     pub name: String,
     pub version: String,
+    pub registry: String,
     pub latest_version: Option<String>,
 }
 
 impl Dependency {
     pub fn new(name: String, version: String) -> Dependency {
-        Dependency { name, version, latest_version: None }
+        Dependency { name, version, registry: "https://registry.npmjs.org/".to_string(), latest_version: None }
     }
+
     pub fn get_dist_tags_url(&self) -> String {
-        format!("https://registry.npmjs.org/-/package/{}/dist-tags", self.name)
+
+        format!("{}-/package/{}/dist-tags", &self.registry, &self.name)
     }
 }
 
