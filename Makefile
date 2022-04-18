@@ -1,8 +1,7 @@
 .PHONY: install
 install: fmt lint
 	cargo build --release
-	rm ~/.local/bin/npm-deps
-	cp ./target/release/npm-deps ~/.local/bin
+	cp ./target/release/npm-deps ~/.cargo/bin
 
 .PHONY: fmt
 fmt:
