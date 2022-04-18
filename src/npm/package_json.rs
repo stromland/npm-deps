@@ -2,6 +2,7 @@ use std::collections::HashMap;
 use std::error::Error;
 use std::fs;
 
+use crate::npm::dependency::Dependency;
 use serde::Deserialize;
 
 #[derive(Debug, Deserialize)]
@@ -37,29 +38,5 @@ impl PackageJson {
         deps.extend(dev_deps);
 
         deps
-    }
-}
-
-pub struct Dependency {
-    pub name: String,
-    pub version: String,
-    pub is_dev: bool,
-    pub registry: String,
-    pub latest_version: Option<String>,
-}
-
-impl Dependency {
-    pub fn new(name: String, version: String, is_dev: bool) -> Dependency {
-        Dependency {
-            name,
-            version,
-            is_dev,
-            registry: String::from("https://registry.npmjs.org/"),
-            latest_version: None,
-        }
-    }
-
-    pub fn get_dist_tags_url(&self) -> String {
-        format!("{}-/package/{}/dist-tags", &self.registry, &self.name)
     }
 }

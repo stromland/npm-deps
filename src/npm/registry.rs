@@ -1,9 +1,12 @@
+use std::str::FromStr;
+
 use futures::future::join_all;
+use reqwest::Url;
 use serde::Deserialize;
 use tokio::task::JoinHandle;
 
 use crate::npm::client::NpmConfig;
-use crate::Dependency;
+use crate::npm::dependency::Dependency;
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -20,8 +23,39 @@ impl NpmRegistry {
         NpmRegistry { config }
     }
 
-    pub async fn fetch_dist_tag(dep: &Dependency) -> Option<DistTags> {
-        match reqwest::get(dep.get_dist_tags_url()).await {
+    pub async fn get_latest_version(
+        &self,
+        dependencies: Vec<Dependency>,
+    ) -> Vec<(Dependency, Option<String>)> {
+        let base_url = self.get_base_url();
+        let tasks: Vec<JoinHandle<(Dependency, Option<String>)>> = dependencies
+            .into_iter()
+            .map(|dep| {
+                let base = base_url.clone();
+                tokio::spawn(async move {
+                    match NpmRegistry::fetch_dist_tag(&base, &dep).await {
+                        Some(dist_tags) => (dep, Some(dist_tags.latest)),
+                        None => (dep, None),
+                    }
+                })
+            })
+            .collect();
+
+        join_all(tasks)
+            .await
+            .into_iter()
+            .flat_map(|res| match res {
+                Ok(it) => Some(it),
+                Err(e) => {
+                    log::warn!("{}", e);
+                    None
+                }
+            })
+            .collect()
+    }
+
+    async fn fetch_dist_tag(base_url: &Url, dep: &Dependency) -> Option<DistTags> {
+        match reqwest::get(NpmRegistry::get_dist_tags_url(base_url, &dep.name)).await {
             Ok(res) => match res.json::<DistTags>().await {
                 Ok(dist_tags) => Some(dist_tags),
                 Err(e) => {
@@ -35,33 +69,13 @@ impl NpmRegistry {
             }
         }
     }
-}
 
-pub async fn get_latest_version(dependencies: Vec<Dependency>) -> Vec<Option<Dependency>> {
-    let tasks: Vec<JoinHandle<Dependency>> = dependencies
-        .into_iter()
-        .map(|dep| {
-            tokio::spawn(async move {
-                match NpmRegistry::fetch_dist_tag(&dep).await {
-                    Some(dist_tags) => Dependency {
-                        latest_version: Some(dist_tags.latest),
-                        ..dep
-                    },
-                    None => dep,
-                }
-            })
-        })
-        .collect();
+    fn get_dist_tags_url(base_url: &Url, name: &str) -> Url {
+        let path = format!("-/package/{}/dist-tags", name);
+        base_url.join(&path).unwrap()
+    }
 
-    join_all(tasks)
-        .await
-        .into_iter()
-        .map(|res| match res {
-            Ok(dep) => Some(dep),
-            Err(e) => {
-                log::warn!("{}", e);
-                None
-            }
-        })
-        .collect()
+    fn get_base_url(&self) -> Url {
+        Url::from_str(&self.config.registry).unwrap()
+    }
 }

@@ -1,6 +1,6 @@
 use comfy_table::Table;
 
-use crate::Dependency;
+use crate::npm::dependency::Dependency;
 
 pub fn get_dependency_table(dependencies: Vec<Dependency>) -> Table {
     let mut table = Table::new();

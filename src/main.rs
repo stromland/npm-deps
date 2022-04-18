@@ -3,8 +3,8 @@ use std::process;
 use log::LevelFilter;
 use simple_logger::SimpleLogger;
 
-use npm_deps::npm::client::NpmClient;
-use npm_deps::package_json::{Dependency, PackageJson};
+use npm_deps::npm::registry::NpmRegistry;
+use npm_deps::npm::{client::NpmClient, dependency::Dependency, package_json::PackageJson};
 
 #[tokio::main]
 async fn main() {
@@ -26,28 +26,39 @@ async fn main() {
 
     log::info!("current npm registry: {}", &config.registry);
 
-    let dependencies: Vec<Dependency> = package_json
-        .get_all_dependencies()
+    let dependencies: Vec<Dependency> = package_json.get_all_dependencies();
+    let total_dependencies = dependencies.len();
+    log::info!("dependencies: {}", total_dependencies);
+
+    let npm_registry = NpmRegistry::new(config);
+    let mut dependencies = npm_registry
+        .get_latest_version(dependencies)
+        .await
         .into_iter()
-        .map(|dep| Dependency {
-            registry: config.registry.clone(),
+        .map(|(dep, latest_version)| Dependency {
+            latest_version,
             ..dep
         })
-        .collect();
+        .filter(|dep| match &dep.latest_version {
+            Some(latest) => &dep.version != latest,
+            None => false,
+        })
+        .collect::<Vec<Dependency>>();
 
-    log::info!("total number of dependencies: {}", dependencies.len());
-
-    let mut dependencies = npm_deps::get_dependencies_to_update(dependencies).await;
     dependencies.sort_by(|dep1, dep2| {
         dep1.is_dev
             .cmp(&dep2.is_dev)
             .then(dep1.name.cmp(&dep2.name))
     });
 
-    let dep_length = dependencies.len();
-    log::info!("total number of dependencies to update: {}", dep_length);
+    let total_updates = dependencies.len();
+    log::info!(
+        "{}/{} dependencies available for update",
+        total_updates,
+        total_dependencies
+    );
 
-    if dep_length == 0 {
+    if total_updates == 0 {
         println!("All dependencies are up to date!")
     } else {
         let table = npm_deps::table::get_dependency_table(dependencies);
