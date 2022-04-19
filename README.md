@@ -1,30 +1,29 @@
 # npm-deps
 
-List dependencies that are ready to update.
+List dependencies that are ready to be updated.
 
 ```bash
 $ cd <dir containing package.json>
 $ npm-deps
-┌───────────────────────────────────────────────────────────────────────┐
-│ Type   Name                          Current version   Latest version │
-╞═══════════════════════════════════════════════════════════════════════╡
-│        axios                         0.24.0            0.26.1         │
-│        react                         17.0.2            18.0.0         │
-│        react-bootstrap               2.1.0             2.2.3          │
-│        react-dom                     17.0.2            18.0.0         │
-│ dev    @testing-library/jest-dom     5.16.1            5.16.4         │
-│ dev    @testing-library/react        12.1.2            13.0.1         │
-│ dev    @testing-library/user-event   13.5.0            14.1.0         │
-│ dev    @types/jest                   27.4.0            27.4.1         │
-│ dev    @types/node                   16.11.19          17.0.24        │
-│ dev    @types/react                  17.0.38           18.0.5         │
-│ dev    @types/react-dom              17.0.11           18.0.0         │
-│ dev    eslint-config-prettier        8.3.0             8.5.0          │
-│ dev    openapi-typescript            5.1.0             5.2.0          │
-│ dev    prettier                      2.5.1             2.6.2          │
-│ dev    react-scripts                 5.0.0             5.0.1          │
-│ dev    typescript                    4.5.4             4.6.3          │
-└───────────────────────────────────────────────────────────────────────┘
+┌───────────────────────────────────────────────────────────────────────────────────────┐
+│ Upgrade   Type   Name                                Current version   Latest version │
+╞═══════════════════════════════════════════════════════════════════════════════════════╡
+│ PATCH            @skatteetaten/frontend-components   5.0.3             5.0.4          │
+│ PATCH     dev    @testing-library/jest-dom           5.16.3            5.16.4         │
+│ PATCH     dev    prettier                            2.6.0             2.6.2          │
+│ PATCH     dev    react-scripts                       5.0.0             5.0.1          │
+│ MINOR            react-router-dom                    6.2.2             6.3.0          │
+│ MINOR            winston                             3.6.0             3.7.2          │
+│ MINOR     dev    eslint-plugin-sonarjs               0.12.0            0.13.0         │
+│ MINOR     dev    jest-junit                          13.0.0            13.1.0         │
+│ MINOR     dev    typescript                          4.5.5             4.6.3          │
+│ MAJOR            react                               17.0.2            18.0.0         │
+│ MAJOR            react-dom                           17.0.2            18.0.0         │
+│ MAJOR     dev    @testing-library/react              12.1.4            13.1.1         │
+│ MAJOR     dev    @types/node                         16.11.26          17.0.25        │
+│ MAJOR     dev    @types/react                        17.0.42           18.0.5         │
+│ MAJOR     dev    @types/react-dom                    17.0.14           18.0.1         │
+└───────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ## Envs

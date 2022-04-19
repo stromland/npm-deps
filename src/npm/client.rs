@@ -1,21 +1,39 @@
-use serde::Deserialize;
+use std::collections::BTreeMap;
+use std::error::Error;
 use std::process;
 
-#[derive(Debug, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct NpmConfig {
-    pub registry: String,
+#[derive(Debug, serde::Deserialize)]
+pub struct NpmOutdatedDetails {
+    pub current: Option<String>,
+    pub wanted: String,
+    pub latest: String,
+    #[serde(alias = "type")]
+    pub dep_type: String,
+    pub homepage: Option<String>,
 }
 
-pub struct NpmClient {}
+impl NpmOutdatedDetails {
+    pub fn is_dev(&self) -> bool {
+        self.dep_type == "devDependencies"
+    }
 
-impl NpmClient {
-    pub fn get_config() -> Option<NpmConfig> {
+    pub fn get_latest(&self) -> Option<String> {
+        Some(self.latest.clone())
+    }
+}
+
+pub type NpmOutdated = BTreeMap<String, NpmOutdatedDetails>;
+
+pub struct Npm;
+
+impl Npm {
+    pub fn outdated() -> Result<NpmOutdated, Box<dyn Error>> {
         let output = process::Command::new("npm")
-            .args(["config", "ls", "--json"])
-            .output()
-            .expect("failed to run npm");
+            .args(["outdated", "--json", "--long"])
+            .output()?;
 
-        serde_json::from_slice(&output.stdout).expect("failed to read npm config")
+        let outdated: NpmOutdated = serde_json::from_slice(&output.stdout)?;
+
+        Ok(outdated)
     }
 }
