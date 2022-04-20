@@ -1,11 +1,8 @@
 use comfy_table::Table;
 
-use crate::npm::client::NpmOutdatedDetails;
-use crate::SemverUpgrade;
+use crate::Dependency;
 
-pub fn get_dependency_table(
-    dependencies: Vec<(String, NpmOutdatedDetails, SemverUpgrade)>,
-) -> Table {
+pub fn get_dependency_table(dependencies: Vec<Dependency>) -> Table {
     let mut table = Table::new();
 
     table.load_preset(comfy_table::presets::UTF8_BORDERS_ONLY);
@@ -20,14 +17,14 @@ pub fn get_dependency_table(
     ]);
 
     // Dependencies
-    for (key, value, semver) in dependencies {
-        let dep_type = if value.is_dev() { "dev" } else { "" };
+    for dep in dependencies {
+        let dep_type = if dep.is_dev { "dev" } else { "" };
         table.add_row(vec![
-            semver.to_string(),
+            dep.upgrade.to_string(),
             dep_type.to_string(),
-            key,
-            value.wanted,
-            value.latest,
+            dep.name,
+            dep.wanted_version,
+            dep.latest_version,
         ]);
     }
 

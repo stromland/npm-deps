@@ -16,10 +16,6 @@ impl NpmOutdatedDetails {
     pub fn is_dev(&self) -> bool {
         self.dep_type == "devDependencies"
     }
-
-    pub fn get_latest(&self) -> Option<String> {
-        Some(self.latest.clone())
-    }
 }
 
 pub type NpmOutdated = BTreeMap<String, NpmOutdatedDetails>;
